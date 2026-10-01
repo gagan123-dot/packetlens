@@ -339,8 +339,13 @@ private:
             if (!pkt_opt) continue;
             
             // Hash to select FP
-            FiveTupleHash hasher;
-            size_t fp_idx = hasher(pkt_opt->tuple) % num_fps_;
+                       FiveTupleHash hasher;
+            // Re-mix the hash so the FP choice is independent of the LB choice
+            uint64_t h = static_cast<uint64_t>(hasher(pkt_opt->tuple));
+            h ^= h >> 33;
+            h *= 0xff51afd7ed558ccdULL;
+            h ^= h >> 33;
+            size_t fp_idx = static_cast<size_t>(h % num_fps_);
             
             fps_[fp_idx]->queue().push(std::move(*pkt_opt));
             dispatched_++;

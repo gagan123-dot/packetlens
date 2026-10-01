@@ -866,62 +866,76 @@ Connection to YouTube:
 
 ### Prerequisites
 
-- **macOS/Linux** with C++17 compiler
-- **g++** or **clang++**
-- No external libraries needed!
-
-### Build Commands
-
-**Simple Version:**
+- A C++17 compiler (g++ 9+ or clang++)
+- **Windows:** install [MSYS2](https://www.msys2.org), then in the *MSYS2 UCRT64* terminal run:
 ```bash
-g++ -std=c++17 -O2 -I include -o dpi_simple \
-    src/main_working.cpp \
-    src/pcap_reader.cpp \
-    src/packet_parser.cpp \
-    src/sni_extractor.cpp \
-    src/types.cpp
+  pacman -S mingw-w64-ucrt-x86_64-gcc
 ```
+  (Old MinGW 6.3 does not support `-pthread` and will not work.)
+- **Linux/macOS:** `g++` or `clang++` is enough
+- No external libraries needed
 
-**Multi-threaded Version:**
+### Build
+
+Run from the project root folder.
+
+**Multi-threaded version (Linux/macOS):**
 ```bash
 g++ -std=c++17 -pthread -O2 -I include -o dpi_engine \
-    src/dpi_mt.cpp \
-    src/pcap_reader.cpp \
-    src/packet_parser.cpp \
-    src/sni_extractor.cpp \
-    src/types.cpp
+    src/dpi_mt.cpp src/pcap_reader.cpp src/packet_parser.cpp \
+    src/sni_extractor.cpp src/types.cpp
 ```
 
-### Running
+**Multi-threaded version (Windows, MSYS2 UCRT64 terminal):**
+```bash
+g++ -std=c++17 -pthread -O2 -static -I include -o dpi_engine.exe \
+    src/dpi_mt.cpp src/pcap_reader.cpp src/packet_parser.cpp \
+    src/sni_extractor.cpp src/types.cpp
+```
 
-**Basic usage:**
+**Simple single-threaded version:**
+```bash
+g++ -std=c++17 -O2 -I include -o dpi_simple \
+    src/main_working.cpp src/pcap_reader.cpp src/packet_parser.cpp \
+    src/sni_extractor.cpp src/types.cpp
+```
+
+### Run
+
+**Linux/macOS:**
 ```bash
 ./dpi_engine test_dpi.pcap output.pcap
 ```
 
-**With blocking:**
+**Windows (PowerShell):**
+```powershell
+chcp 65001
+.\dpi_engine.exe test_dpi.pcap output.pcap
+```
+
+
+**With blocking rules:**
 ```bash
-./dpi_engine test_dpi.pcap output.pcap \
-    --block-app YouTube \
-    --block-app TikTok \
-    --block-ip 192.168.1.50 \
-    --block-domain facebook
+./dpi_engine test_dpi.pcap output.pcap --block-app YouTube --block-domain tiktok --block-ip 192.168.1.50
 ```
 
 **Configure threads (multi-threaded only):**
 ```bash
 ./dpi_engine input.pcap output.pcap --lbs 4 --fps 4
-# Creates 4 LB threads × 4 FP threads = 16 processing threads
 ```
 
-### Creating Test Data
+### Windows notes
+
+- The `\` line continuation works only in bash (MSYS2, Linux, macOS). In PowerShell, write the command on one line.
+- If box characters look garbled in PowerShell, run `chcp 65001` first, or use Windows Terminal.
+
+### Creating test data
 
 ```bash
 python3 generate_test_pcap.py
-# Creates test_dpi.pcap with sample traffic
 ```
 
----
+
 
 ## 11. Understanding the Output
 
